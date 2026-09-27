@@ -32,15 +32,16 @@
     h1 { font-size: 24px; margin-bottom: 8px; text-align: center; }
     .subtitle { color: #666; font-size: 14px; text-align: center; margin-bottom: 32px; }
     label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #333; }
-    input {
+    input, select, textarea {
       width: 100%;
       padding: 12px 14px;
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 15px;
       margin-bottom: 16px;
+      font-family: inherit;
     }
-    input:focus { outline: none; border-color: #1a1a1a; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #1a1a1a; }
     button {
       padding: 12px 18px;
       background: #1a1a1a;
@@ -95,6 +96,8 @@
       font-size: 14px;
       background: white;
       cursor: pointer;
+      width: auto;
+      margin-bottom: 0;
     }
 
     .table-wrap {
@@ -121,7 +124,8 @@
       vertical-align: middle;
     }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafafa; }
+    tr.order-row { cursor: pointer; }
+    tr.order-row:hover td { background: #fafafa; }
     .badge {
       display: inline-block;
       padding: 4px 10px;
@@ -138,6 +142,119 @@
     .mono { font-family: ui-monospace, monospace; font-size: 12px; color: #666; }
     .empty { text-align: center; padding: 40px; color: #999; }
     .loading { text-align: center; padding: 40px; color: #999; }
+
+    /* DRAWER */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 100;
+    }
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100vh;
+      width: 100%;
+      max-width: 520px;
+      background: white;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.1);
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .drawer-header h2 { font-size: 18px; }
+    .drawer-header .close {
+      background: transparent;
+      color: #666;
+      font-size: 24px;
+      padding: 4px 10px;
+      line-height: 1;
+    }
+    .drawer-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .drawer-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .drawer-footer .save-status { flex: 1; font-size: 14px; color: #666; }
+    .drawer-footer .save-status.ok { color: #155724; }
+
+    .section {
+      margin-bottom: 24px;
+    }
+    .section h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+    .field {
+      margin-bottom: 12px;
+    }
+    .field label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .field .value {
+      font-size: 14px;
+      color: #1a1a1a;
+      word-break: break-word;
+    }
+    .field .value.mono { font-family: ui-monospace, monospace; font-size: 12px; color: #555; }
+    .field input, .field select, .field textarea {
+      margin-bottom: 0;
+      font-size: 14px;
+      padding: 8px 10px;
+    }
+    .field textarea { min-height: 70px; resize: vertical; }
+
+    .tech-toggle {
+      background: #f8f8f8;
+      border: none;
+      color: #666;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+    }
+    .tech-content {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      background: #fafafa;
+      border-radius: 8px;
+    }
+    .tech-content.open { display: block; }
   </style>
 </head>
 <body>
@@ -204,12 +321,28 @@
     </div>
   </div>
 
+  <!-- ============================ DRAWER ============================ -->
+  <div id="drawer-overlay" class="drawer-overlay"></div>
+  <div id="drawer" class="drawer">
+    <div class="drawer-header">
+      <h2 id="drawer-title">Ordine</h2>
+      <button class="close" id="drawer-close">×</button>
+    </div>
+    <div class="drawer-body" id="drawer-body">
+      <!-- popolato via JS -->
+    </div>
+    <div class="drawer-footer">
+      <span class="save-status" id="save-status"></span>
+      <button id="save-btn">Salva</button>
+    </div>
+  </div>
+
   <script type="module">
     // ============================================================
     // Configurazione Supabase
     // ============================================================
     const SUPABASE_URL = 'https://gbpwnmxiqraqawonvlnu.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdicHdubXhpcXJhcWF3b252bG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0MjgxNjAsImV4cCI6MjEwMTAwNDE2MH0.wapFuPZXawp64H7y7vwRtjvFGUup7kUaswfH9pxX844';
+    const SUPABASE_ANON_KEY = 'INCOLLA_QUI_LA_TUA_ANON_KEY';
 
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -231,7 +364,16 @@
     const ordersEmpty = document.getElementById('orders-empty');
     const countInfo = document.getElementById('count-info');
 
+    const drawer = document.getElementById('drawer');
+    const drawerOverlay = document.getElementById('drawer-overlay');
+    const drawerTitle = document.getElementById('drawer-title');
+    const drawerBody = document.getElementById('drawer-body');
+    const drawerClose = document.getElementById('drawer-close');
+    const saveBtn = document.getElementById('save-btn');
+    const saveStatus = document.getElementById('save-status');
+
     let allOrders = [];
+    let currentOrder = null;
 
     // ============================================================
     // Utils
@@ -250,6 +392,7 @@
     function showLogin() {
       loginView.classList.remove('hide');
       dashboard.classList.remove('show');
+      closeDrawer();
     }
 
     function formatDate(iso) {
@@ -259,6 +402,11 @@
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit'
       });
+    }
+    function formatDateOnly(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toISOString().slice(0, 10);
     }
     function formatEuro(n) {
       if (n === null || n === undefined || isNaN(n)) return '—';
@@ -282,7 +430,7 @@
 
       const { data, error } = await supabase
         .from('ordini')
-        .select('id, created_at, stato, nome, cognome, email, prodotto_nome, quantita, totale_complessivo, tracking_number, corriere')
+        .select('*')
         .order('created_at', { ascending: false });
 
       ordersLoading.style.display = 'none';
@@ -318,6 +466,7 @@
 
       for (const o of filtered) {
         const tr = document.createElement('tr');
+        tr.className = 'order-row';
         tr.innerHTML = `
           <td>${formatDate(o.created_at)}</td>
           <td><span class="badge ${escapeHtml(o.stato || '')}">${escapeHtml(o.stato || '—')}</span></td>
@@ -336,11 +485,206 @@
               : '<span style="color:#bbb;">—</span>'}
           </td>
         `;
+        tr.addEventListener('click', () => openDrawer(o.id));
         ordersTbody.appendChild(tr);
       }
 
       countInfo.textContent = `${filtered.length} ordin${filtered.length === 1 ? 'e' : 'i'}`;
     }
+
+    // ============================================================
+    // Drawer
+    // ============================================================
+    function openDrawer(orderId) {
+      const o = allOrders.find(x => x.id === orderId);
+      if (!o) return;
+      currentOrder = { ...o };
+
+      drawerTitle.textContent = `Ordine #${o.id.slice(0, 8)}`;
+      drawerBody.innerHTML = renderDrawerContent(o);
+      saveStatus.textContent = '';
+      saveStatus.classList.remove('ok');
+
+      // Toggle tecnico
+      const techBtn = document.getElementById('tech-toggle');
+      const techContent = document.getElementById('tech-content');
+      if (techBtn && techContent) {
+        techBtn.addEventListener('click', () => {
+          techContent.classList.toggle('open');
+        });
+      }
+
+      drawer.classList.add('open');
+      drawerOverlay.classList.add('open');
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      drawerOverlay.classList.remove('open');
+      currentOrder = null;
+    }
+
+    function renderDrawerContent(o) {
+      return `
+        <div class="section">
+          <h3>Cliente</h3>
+          <div class="field"><label>Nome</label><div class="value">${escapeHtml(o.nome)} ${escapeHtml(o.cognome)}</div></div>
+          <div class="field"><label>Email</label><div class="value mono">${escapeHtml(o.email)}</div></div>
+          <div class="field"><label>Telefono</label><div class="value">${escapeHtml(o.telefono || '—')}</div></div>
+        </div>
+
+        <div class="section">
+          <h3>Spedizione</h3>
+          <div class="field"><label>Indirizzo</label><div class="value">${escapeHtml(o.indirizzo)}</div></div>
+          <div class="field"><label>Città</label><div class="value">${escapeHtml(o.citta)} ${escapeHtml(o.cap)} (${escapeHtml(o.provincia)})</div></div>
+          <div class="field"><label>Nazione</label><div class="value">${escapeHtml(o.nazione || 'IT')}</div></div>
+        </div>
+
+        <div class="section">
+          <h3>Prodotto</h3>
+          <div class="field"><label>Nome</label><div class="value">${escapeHtml(o.prodotto_nome)}</div></div>
+          <div class="field"><label>Slug</label><div class="value mono">${escapeHtml(o.prodotto_slug)}</div></div>
+          <div class="field"><label>Quantità</label><div class="value">${o.quantita || 1}</div></div>
+          <div class="field"><label>Prezzo unitario</label><div class="value">${formatEuro(o.prezzo_unitario)}</div></div>
+          <div class="field"><label>Prezzo totale</label><div class="value">${formatEuro(o.prezzo_totale)}</div></div>
+          <div class="field"><label>Spedizione</label><div class="value">${formatEuro(o.costo_spedizione)}</div></div>
+          <div class="field"><label>Totale complessivo</label><div class="value"><strong>${formatEuro(o.totale_complessivo)}</strong></div></div>
+        </div>
+
+        <div class="section">
+          <h3>Pagamento</h3>
+          <div class="field"><label>Stato attuale</label><div class="value"><span class="badge ${escapeHtml(o.stato || '')}">${escapeHtml(o.stato || '—')}</span></div></div>
+          <div class="field"><label>Payment Intent ID (Stripe)</label><div class="value mono">${escapeHtml(o.stripe_payment_intent_id || '—')}</div></div>
+        </div>
+
+        <div class="section">
+          <h3>Gestione ordine</h3>
+          <div class="field">
+            <label for="edit-stato">Stato</label>
+            <select id="edit-stato">
+              <option value="pending" ${o.stato === 'pending' ? 'selected' : ''}>Pending</option>
+              <option value="pagato" ${o.stato === 'pagato' ? 'selected' : ''}>Pagato</option>
+              <option value="spedito" ${o.stato === 'spedito' ? 'selected' : ''}>Spedito</option>
+              <option value="annullato" ${o.stato === 'annullato' ? 'selected' : ''}>Annullato</option>
+              <option value="rimborsato" ${o.stato === 'rimborsato' ? 'selected' : ''}>Rimborsato</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="edit-corriere">Corriere</label>
+            <input type="text" id="edit-corriere" value="${escapeHtml(o.corriere || '')}" placeholder="es. BRT, GLS, Poste">
+          </div>
+          <div class="field">
+            <label for="edit-tracking">Tracking number</label>
+            <input type="text" id="edit-tracking" value="${escapeHtml(o.tracking_number || '')}" placeholder="es. 1234567890">
+          </div>
+          <div class="field">
+            <label for="edit-data-spedizione">Data spedizione</label>
+            <input type="date" id="edit-data-spedizione" value="${formatDateOnly(o.data_spedizione)}">
+          </div>
+          <div class="field">
+            <label for="edit-note-interne">Note interne</label>
+            <textarea id="edit-note-interne" placeholder="Note visibili solo a te">${escapeHtml(o.note_interne || '')}</textarea>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Note cliente</h3>
+          <div class="field"><div class="value">${escapeHtml(o.note_cliente || '—')}</div></div>
+        </div>
+
+        <div class="section">
+          <button class="tech-toggle" id="tech-toggle">▸ Mostra dettagli tecnici</button>
+          <div class="tech-content" id="tech-content">
+            <div class="field"><label>ID ordine</label><div class="value mono">${escapeHtml(o.id)}</div></div>
+            <div class="field"><label>Creato il</label><div class="value">${formatDate(o.created_at)}</div></div>
+            <div class="field"><label>Aggiornato il</label><div class="value">${formatDate(o.updated_at)}</div></div>
+            <div class="field"><label>Stripe session ID</label><div class="value mono">${escapeHtml(o.stripe_session_id || '—')}</div></div>
+            <div class="field"><label>Stripe checkout URL</label><div class="value mono" style="word-break:break-all;">${escapeHtml(o.stripe_checkout_url || '—')}</div></div>
+            <div class="field"><label>IP</label><div class="value mono">${escapeHtml(o.ip || '—')}</div></div>
+            <div class="field"><label>User agent</label><div class="value mono" style="word-break:break-all;">${escapeHtml(o.user_agent || '—')}</div></div>
+            <div class="field"><label>Referrer</label><div class="value mono" style="word-break:break-all;">${escapeHtml(o.referrer || '—')}</div></div>
+            <div class="field"><label>UTM source</label><div class="value mono">${escapeHtml(o.utm_source || '—')}</div></div>
+            <div class="field"><label>UTM medium</label><div class="value mono">${escapeHtml(o.utm_medium || '—')}</div></div>
+            <div class="field"><label>UTM campaign</label><div class="value mono">${escapeHtml(o.utm_campaign || '—')}</div></div>
+            <div class="field"><label>Data consegna</label><div class="value">${formatDate(o.data_consegna)}</div></div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // Salva modifiche
+    // ============================================================
+    saveBtn.addEventListener('click', async () => {
+      if (!currentOrder) return;
+
+      const nuovoStato = document.getElementById('edit-stato').value;
+      const corriere = document.getElementById('edit-corriere').value.trim() || null;
+      const tracking = document.getElementById('edit-tracking').value.trim() || null;
+      const dataSpedizioneRaw = document.getElementById('edit-data-spedizione').value;
+      const noteInterne = document.getElementById('edit-note-interne').value.trim() || null;
+
+      const dataSpedizione = dataSpedizioneRaw
+        ? new Date(dataSpedizioneRaw + 'T12:00:00').toISOString()
+        : null;
+
+      saveBtn.disabled = true;
+      saveStatus.textContent = 'Salvataggio...';
+      saveStatus.classList.remove('ok');
+
+      const { error } = await supabase
+        .from('ordini')
+        .update({
+          stato: nuovoStato,
+          corriere: corriere,
+          tracking_number: tracking,
+          data_spedizione: dataSpedizione,
+          note_interne: noteInterne,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', currentOrder.id);
+
+      saveBtn.disabled = false;
+
+      if (error) {
+        console.error(error);
+        saveStatus.textContent = '❌ Errore: ' + error.message;
+        return;
+      }
+
+      saveStatus.textContent = '✅ Salvato';
+      saveStatus.classList.add('ok');
+
+      // Aggiorna la lista locale
+      const idx = allOrders.findIndex(x => x.id === currentOrder.id);
+      if (idx !== -1) {
+        allOrders[idx] = {
+          ...allOrders[idx],
+          stato: nuovoStato,
+          corriere: corriere,
+          tracking_number: tracking,
+          data_spedizione: dataSpedizione,
+          note_interne: noteInterne
+        };
+      }
+      renderOrders();
+
+      setTimeout(() => {
+        if (saveStatus.textContent === '✅ Salvato') {
+          saveStatus.textContent = '';
+          saveStatus.classList.remove('ok');
+        }
+      }, 3000);
+    });
+
+    // ============================================================
+    // Chiudi drawer
+    // ============================================================
+    drawerClose.addEventListener('click', closeDrawer);
+    drawerOverlay.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDrawer();
+    });
 
     // ============================================================
     // Login
@@ -367,24 +711,15 @@
       showDashboard();
     });
 
-    // ============================================================
-    // Logout
-    // ============================================================
     logoutBtn.addEventListener('click', async () => {
       await supabase.auth.signOut();
       showLogin();
       loginForm.reset();
     });
 
-    // ============================================================
-    // Filtro e refresh
-    // ============================================================
     filterStato.addEventListener('change', renderOrders);
     refreshBtn.addEventListener('click', loadOrders);
 
-    // ============================================================
-    // Sessione iniziale
-    // ============================================================
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) showDashboard();
