@@ -11,10 +11,15 @@
       background: #f5f5f7;
       color: #1a1a1a;
       min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* LOGIN */
+    .login-wrap {
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
     }
     .container {
       background: white;
@@ -24,24 +29,9 @@
       width: 100%;
       max-width: 400px;
     }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-    .subtitle {
-      color: #666;
-      font-size: 14px;
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    label {
-      display: block;
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 6px;
-      color: #333;
-    }
+    h1 { font-size: 24px; margin-bottom: 8px; text-align: center; }
+    .subtitle { color: #666; font-size: 14px; text-align: center; margin-bottom: 32px; }
+    label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #333; }
     input {
       width: 100%;
       padding: 12px 14px;
@@ -49,45 +39,112 @@
       border-radius: 8px;
       font-size: 15px;
       margin-bottom: 16px;
-      transition: border-color 0.2s;
     }
-    input:focus {
-      outline: none;
-      border-color: #1a1a1a;
-    }
+    input:focus { outline: none; border-color: #1a1a1a; }
     button {
-      width: 100%;
-      padding: 14px;
+      padding: 12px 18px;
       background: #1a1a1a;
       color: white;
       border: none;
       border-radius: 8px;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.2s;
     }
     button:hover { opacity: 0.85; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
     .error {
-      background: #fee;
-      color: #c00;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 14px;
-      margin-bottom: 16px;
-      display: none;
+      background: #fee; color: #c00;
+      padding: 12px; border-radius: 8px;
+      font-size: 14px; margin-bottom: 16px; display: none;
     }
     .error.show { display: block; }
+
+    /* DASHBOARD */
     #dashboard { display: none; }
     #dashboard.show { display: block; }
     #login-view.hide { display: none; }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .topbar h1 { font-size: 22px; text-align: left; }
+    .topbar .actions { display: flex; gap: 10px; align-items: center; }
+
+    .filters {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .filters label { margin: 0; font-size: 13px; color: #666; }
+    select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .table-wrap {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th {
+      background: #fafafa;
+      text-align: left;
+      padding: 12px 14px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #666;
+      border-bottom: 1px solid #eee;
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+    .badge.pending { background: #fff3cd; color: #856404; }
+    .badge.pagato { background: #d4edda; color: #155724; }
+    .badge.spedito { background: #cce5ff; color: #004085; }
+    .badge.annullato { background: #f8d7da; color: #721c24; }
+    .badge.rimborsato { background: #e2e3e5; color: #383d41; }
+    .mono { font-family: ui-monospace, monospace; font-size: 12px; color: #666; }
+    .empty { text-align: center; padding: 40px; color: #999; }
+    .loading { text-align: center; padding: 40px; color: #999; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- LOGIN -->
-    <div id="login-view">
+
+  <!-- ============================ LOGIN ============================ -->
+  <div id="login-view" class="login-wrap">
+    <div class="container">
       <h1>EcommerMix Admin</h1>
       <p class="subtitle">Accedi per gestire gli ordini</p>
 
@@ -100,18 +157,50 @@
         <label for="password">Password</label>
         <input type="password" id="password" required autocomplete="current-password">
 
-        <button type="submit" id="login-btn">Accedi</button>
+        <button type="submit" id="login-btn" style="width:100%;">Accedi</button>
       </form>
     </div>
+  </div>
 
-    <!-- DASHBOARD -->
-    <div id="dashboard">
-      <h1>Dashboard</h1>
-      <p class="subtitle">Login effettuato ✅</p>
-      <p style="text-align:center;color:#666;font-size:14px;">
-        Qui costruiremo la lista ordini.
-      </p>
-      <button id="logout-btn" style="margin-top:24px;background:#666;">Logout</button>
+  <!-- ============================ DASHBOARD ============================ -->
+  <div id="dashboard">
+    <div class="topbar">
+      <h1>Ordini</h1>
+      <div class="actions">
+        <button id="refresh-btn" style="background:#666;">Aggiorna</button>
+        <button id="logout-btn" style="background:#999;">Logout</button>
+      </div>
+    </div>
+
+    <div class="filters">
+      <label for="filter-stato">Filtra per stato:</label>
+      <select id="filter-stato">
+        <option value="">Tutti</option>
+        <option value="pending">Pending</option>
+        <option value="pagato">Pagato</option>
+        <option value="spedito">Spedito</option>
+        <option value="annullato">Annullato</option>
+        <option value="rimborsato">Rimborsato</option>
+      </select>
+      <span id="count-info" style="margin-left:auto;font-size:13px;color:#666;"></span>
+    </div>
+
+    <div class="table-wrap">
+      <div id="orders-loading" class="loading">Caricamento ordini...</div>
+      <table id="orders-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Stato</th>
+            <th>Cliente</th>
+            <th>Prodotto</th>
+            <th>Totale</th>
+            <th>Tracking</th>
+          </tr>
+        </thead>
+        <tbody id="orders-tbody"></tbody>
+      </table>
+      <div id="orders-empty" class="empty" style="display:none;">Nessun ordine trovato.</div>
     </div>
   </div>
 
@@ -120,15 +209,13 @@
     // Configurazione Supabase
     // ============================================================
     const SUPABASE_URL = 'https://gbpwnmxiqraqawonvlnu.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdicHdubXhpcXJhcWF3b252bG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0MjgxNjAsImV4cCI6MjEwMTAwNDE2MH0.wapFuPZXawp64H7y7vwRtjvFGUup7kUaswfH9pxX844';
+    const SUPABASE_ANON_KEY = 'INCOLLA_QUI_LA_TUA_ANON_KEY';
 
-    // Import Supabase client da CDN (ESM)
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // ============================================================
-    // Elementi DOM
+    // DOM
     // ============================================================
     const loginView = document.getElementById('login-view');
     const dashboard = document.getElementById('dashboard');
@@ -136,24 +223,123 @@
     const loginBtn = document.getElementById('login-btn');
     const loginError = document.getElementById('login-error');
     const logoutBtn = document.getElementById('logout-btn');
+    const refreshBtn = document.getElementById('refresh-btn');
+    const filterStato = document.getElementById('filter-stato');
+    const ordersLoading = document.getElementById('orders-loading');
+    const ordersTable = document.getElementById('orders-table');
+    const ordersTbody = document.getElementById('orders-tbody');
+    const ordersEmpty = document.getElementById('orders-empty');
+    const countInfo = document.getElementById('count-info');
+
+    let allOrders = [];
 
     // ============================================================
-    // Utility
+    // Utils
     // ============================================================
     function showError(msg) {
       loginError.textContent = msg;
       loginError.classList.add('show');
     }
-    function hideError() {
-      loginError.classList.remove('show');
-    }
+    function hideError() { loginError.classList.remove('show'); }
+
     function showDashboard() {
       loginView.classList.add('hide');
       dashboard.classList.add('show');
+      loadOrders();
     }
     function showLogin() {
       loginView.classList.remove('hide');
       dashboard.classList.remove('show');
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleString('it-IT', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+    function formatEuro(n) {
+      if (n === null || n === undefined || isNaN(n)) return '—';
+      return '€ ' + Number(n).toFixed(2).replace('.', ',');
+    }
+    function escapeHtml(s) {
+      if (s === null || s === undefined) return '';
+      return String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // ============================================================
+    // Carica ordini
+    // ============================================================
+    async function loadOrders() {
+      ordersLoading.style.display = 'block';
+      ordersTable.style.display = 'none';
+      ordersEmpty.style.display = 'none';
+      countInfo.textContent = '';
+
+      const { data, error } = await supabase
+        .from('ordini')
+        .select('id, created_at, stato, nome, cognome, email, prodotto_nome, quantita, totale_complessivo, tracking_number, corriere')
+        .order('created_at', { ascending: false });
+
+      ordersLoading.style.display = 'none';
+
+      if (error) {
+        console.error(error);
+        ordersEmpty.textContent = 'Errore caricamento ordini: ' + error.message;
+        ordersEmpty.style.display = 'block';
+        return;
+      }
+
+      allOrders = data || [];
+      renderOrders();
+    }
+
+    function renderOrders() {
+      const filtro = filterStato.value;
+      const filtered = filtro
+        ? allOrders.filter(o => o.stato === filtro)
+        : allOrders;
+
+      ordersTbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        ordersTable.style.display = 'none';
+        ordersEmpty.style.display = 'block';
+        countInfo.textContent = `0 ordini`;
+        return;
+      }
+
+      ordersEmpty.style.display = 'none';
+      ordersTable.style.display = 'table';
+
+      for (const o of filtered) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${formatDate(o.created_at)}</td>
+          <td><span class="badge ${escapeHtml(o.stato || '')}">${escapeHtml(o.stato || '—')}</span></td>
+          <td>
+            <div>${escapeHtml(o.nome)} ${escapeHtml(o.cognome)}</div>
+            <div class="mono">${escapeHtml(o.email)}</div>
+          </td>
+          <td>
+            <div>${escapeHtml(o.prodotto_nome)}</div>
+            <div class="mono">x${o.quantita || 1}</div>
+          </td>
+          <td>${formatEuro(o.totale_complessivo)}</td>
+          <td>
+            ${o.tracking_number
+              ? `<div class="mono">${escapeHtml(o.tracking_number)}</div><div class="mono">${escapeHtml(o.corriere || '')}</div>`
+              : '<span style="color:#bbb;">—</span>'}
+          </td>
+        `;
+        ordersTbody.appendChild(tr);
+      }
+
+      countInfo.textContent = `${filtered.length} ordin${filtered.length === 1 ? 'e' : 'i'}`;
     }
 
     // ============================================================
@@ -168,7 +354,7 @@
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
 
       loginBtn.disabled = false;
       loginBtn.textContent = 'Accedi';
@@ -178,7 +364,6 @@
         console.error(error);
         return;
       }
-
       showDashboard();
     });
 
@@ -192,15 +377,18 @@
     });
 
     // ============================================================
-    // Controllo sessione all'avvio
+    // Filtro e refresh
+    // ============================================================
+    filterStato.addEventListener('change', renderOrders);
+    refreshBtn.addEventListener('click', loadOrders);
+
+    // ============================================================
+    // Sessione iniziale
     // ============================================================
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        showDashboard();
-      } else {
-        showLogin();
-      }
+      if (session) showDashboard();
+      else showLogin();
     })();
   </script>
 </body>
