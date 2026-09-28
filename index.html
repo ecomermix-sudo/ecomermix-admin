@@ -342,7 +342,7 @@
     // Configurazione Supabase
     // ============================================================
     const SUPABASE_URL = 'https://gbpwnmxiqraqawonvlnu.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdicHdubXhpcXJhcWF3b252bG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0MjgxNjAsImV4cCI6MjEwMTAwNDE2MH0.wapFuPZXawp64H7y7vwRtjvFGUup7kUaswfH9pxX844';
+    const SUPABASE_ANON_KEY = 'INCOLLA_QUI_LA_TUA_ANON_KEY';
 
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -505,7 +505,6 @@
       saveStatus.textContent = '';
       saveStatus.classList.remove('ok');
 
-      // Toggle tecnico
       const techBtn = document.getElementById('tech-toggle');
       const techContent = document.getElementById('tech-content');
       if (techBtn && techContent) {
@@ -547,7 +546,10 @@
           <div class="field"><label>Quantità</label><div class="value">${o.quantita || 1}</div></div>
           <div class="field"><label>Prezzo unitario</label><div class="value">${formatEuro(o.prezzo_unitario)}</div></div>
           <div class="field"><label>Prezzo totale</label><div class="value">${formatEuro(o.prezzo_totale)}</div></div>
-          <div class="field"><label>Spedizione</label><div class="value">${formatEuro(o.costo_spedizione)}</div></div>
+          <div class="field">
+            <label for="edit-spedizione">Spedizione (€)</label>
+            <input type="number" id="edit-spedizione" step="0.01" min="0" value="${o.costo_spedizione ?? ''}">
+          </div>
           <div class="field"><label>Totale complessivo</label><div class="value"><strong>${formatEuro(o.totale_complessivo)}</strong></div></div>
         </div>
 
@@ -623,10 +625,13 @@
       const tracking = document.getElementById('edit-tracking').value.trim() || null;
       const dataSpedizioneRaw = document.getElementById('edit-data-spedizione').value;
       const noteInterne = document.getElementById('edit-note-interne').value.trim() || null;
+      const costoSpedizione = parseFloat(document.getElementById('edit-spedizione').value) || 0;
 
       const dataSpedizione = dataSpedizioneRaw
         ? new Date(dataSpedizioneRaw + 'T12:00:00').toISOString()
         : null;
+
+      const nuovoTotale = (currentOrder.prezzo_totale || 0) + costoSpedizione;
 
       saveBtn.disabled = true;
       saveStatus.textContent = 'Salvataggio...';
@@ -640,6 +645,8 @@
           tracking_number: tracking,
           data_spedizione: dataSpedizione,
           note_interne: noteInterne,
+          costo_spedizione: costoSpedizione,
+          totale_complessivo: nuovoTotale,
           updated_at: new Date().toISOString()
         })
         .eq('id', currentOrder.id);
@@ -655,7 +662,6 @@
       saveStatus.textContent = '✅ Salvato';
       saveStatus.classList.add('ok');
 
-      // Aggiorna la lista locale
       const idx = allOrders.findIndex(x => x.id === currentOrder.id);
       if (idx !== -1) {
         allOrders[idx] = {
@@ -664,7 +670,9 @@
           corriere: corriere,
           tracking_number: tracking,
           data_spedizione: dataSpedizione,
-          note_interne: noteInterne
+          note_interne: noteInterne,
+          costo_spedizione: costoSpedizione,
+          totale_complessivo: nuovoTotale
         };
       }
       renderOrders();
